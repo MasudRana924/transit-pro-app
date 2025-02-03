@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "BusTicketPlatform",
-    "slug": "BusTicketPlatform",
+    "name": "TransitPro",
+    "slug": "transitpro",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,10 +19,16 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.masudrana_924.BusTicketPlatform"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3329d357-2385-468e-b150-cf10fea5dee8"
+      }
     }
   }
 }
