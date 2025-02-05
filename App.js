@@ -1,34 +1,24 @@
-import React, { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import HomeScreen from './src/screens/mainlayout/HomeScreen';
-import OnboardingScreen from './src/screens/onboarding/OnboardingScreen';
-import LoginScreen from './src/screens/auth/LoginScreen';
-import RegisterScreen from './src/screens/auth/RegisterScreen';
-import SettingsScreen from './src/screens/settings/SettingsScreen';
-import InboxScreen from './src/screens/inbox/InboxScreen';
-import BusResultsScreen from './src/screens/searchresult/BusResultsScreen';
-import BusSeatSelector from './src/screens/seats/BusSeatSelector';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import HomeScreen from './src/components/HomeScreen';
+import InboxScreen from './src/components/InboxScreen';
+import SettingsScreen from './src/components/SettingsScreen';
+import OnboardingScreen from './src/components/OnboardingScreen';
+import BusSeatSelector from './src/components/BusSeatSelector';
+import BusResultsScreen from './src/components/BusResultsScreen';
+import LoginScreen from './src/components/LoginScreen';
 
-const Stack = createStackNavigator();
+import PaymentSelectionScreen from './src/components/PaymentSelectionScreen';
+import BookingHistoryScreen from './src/components/BookingHistoryScreen';
+import RegisterScreen from './src/components/RegisterScreen';
+
 const Tab = createBottomTabNavigator();
-
-const Preloader = ({ navigation }) => {
-  useEffect(() => {
-    setTimeout(() => {
-      navigation.replace('Onboarding');
-    }, 2000);
-  }, []);
-
-  return (
-    <View style={styles.container}>
-      <ActivityIndicator size="large" color="#0000ff"/>
-    </View>
-  );
-};
+const Stack = createStackNavigator();
 
 const HomeTabs = () => {
   return (
@@ -45,9 +35,9 @@ const HomeTabs = () => {
           }
           return <Ionicons name={iconName} size={size} color={color} />;
         },
-        headerShown: false,
-        tabBarActiveTintColor: '#007bff',
+        tabBarActiveTintColor: '#ff2511',
         tabBarInactiveTintColor: 'gray',
+        headerShown: false,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
@@ -57,31 +47,73 @@ const HomeTabs = () => {
   );
 };
 
-const App = () => {
+export default function App() {
+  const [isFirstLaunch, setIsFirstLaunch] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const checkOnboardingAndLoginStatus = async () => {
+      try {
+        const onboardingStatus = await AsyncStorage.getItem('@isFirstLaunch');
+        const token = await AsyncStorage.getItem('@auth_token');
+  
+        if (onboardingStatus === null) {
+          await AsyncStorage.setItem('@isFirstLaunch', JSON.stringify(false));
+          setIsFirstLaunch(true);
+        } else {
+          setIsFirstLaunch(false);
+        }
+  
+        setIsLoggedIn(!!token);
+      } catch (error) {
+        console.error('Error checking onboarding or login status:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    checkOnboardingAndLoginStatus();
+  }, []);
+  
+
+  if (isLoading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#007bff" />
+      </View>
+    );
+  }
+
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName="Preloader"
-        screenOptions={{ headerShown: false }}
-      >
-        <Stack.Screen name="Preloader" component={Preloader} />
-        <Stack.Screen name="Onboarding" component={OnboardingScreen} />
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Register" component={RegisterScreen} />
-        <Stack.Screen name="Results" component={BusResultsScreen}/>
-        <Stack.Screen name="Seats"component={BusSeatSelector}/>
-        <Stack.Screen name="Main" component={HomeTabs} />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {isFirstLaunch ? (
+          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+        ) : null}
+        {!isLoggedIn ? (
+          <>
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Signup" component={RegisterScreen} />
+          </>
+        ) : (
+          <>
+            <Stack.Screen name="Main" component={HomeTabs} />
+            <Stack.Screen name="Results" component={BusResultsScreen} />
+            <Stack.Screen name="Seats" component={BusSeatSelector} />
+            <Stack.Screen name="Payment" component={PaymentSelectionScreen} />
+            <Stack.Screen name="History" component={BookingHistoryScreen} />
+          </>
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'white',
   },
 });
-
-export default App;

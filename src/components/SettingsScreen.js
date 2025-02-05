@@ -1,28 +1,41 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  SafeAreaView, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ScrollView 
+import {
+  View,
+  Text,
+  SafeAreaView,
+  TouchableOpacity,
+  StyleSheet,
+  ScrollView,
 } from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
-
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 const SettingsScreen = () => {
+  const navigation = useNavigation();
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
+  const [language, setLanguage] = useState('English');
+  const [paymentMethod, setPaymentMethod] = useState('bKash');
 
   const renderToggle = (state, onToggle) => (
-    <TouchableOpacity 
-      style={[styles.toggle, state ? styles.toggleActive : styles.toggleInactive]}
-      onPress={onToggle}
-    >
+    <TouchableOpacity
+      style={[
+        styles.toggle,
+        state ? styles.toggleActive : styles.toggleInactive,
+      ]}
+      onPress={onToggle}>
       <View style={[styles.toggleCircle, state && styles.toggleCircleActive]} />
     </TouchableOpacity>
   );
-
+  const handleLogout = async () => {
+    try {
+      await AsyncStorage.removeItem('@auth_token');
+      navigation.navigate('Login'); // Navigate back to the login screen
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -40,7 +53,7 @@ const SettingsScreen = () => {
         {/* Preferences */}
         <View style={styles.settingsSection}>
           <Text style={styles.sectionTitle}>Preferences</Text>
-          
+
           {/* Dark Mode */}
           <View style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
@@ -56,38 +69,63 @@ const SettingsScreen = () => {
               <FeatherIcon name="bell" size={20} color="#4B5563" />
               <Text style={styles.settingText}>Notifications</Text>
             </View>
-            {renderToggle(notifications, () => setNotifications(!notifications))}
+            {renderToggle(notifications, () =>
+              setNotifications(!notifications)
+            )}
+          </View>
+
+          {/* Language Selection */}
+          <View style={styles.settingItem}>
+            <View style={styles.settingItemLeft}>
+              <FeatherIcon name="globe" size={20} color="#4B5563" />
+              <Text style={styles.settingText}>Language</Text>
+            </View>
+            <Text style={styles.settingValue}>{language}</Text>
+          </View>
+
+          {/* Payment Method */}
+          <View style={styles.settingItem}>
+            <View style={styles.settingItemLeft}>
+              <FeatherIcon name="credit-card" size={20} color="#4B5563" />
+              <Text style={styles.settingText}>Payment Method</Text>
+            </View>
+            <Text style={styles.settingValue}>{paymentMethod}</Text>
           </View>
 
           {/* Network Settings */}
-          <TouchableOpacity style={styles.settingItem}>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => navigation.navigate('History')}>
             <View style={styles.settingItemLeft}>
               <FeatherIcon name="wifi" size={20} color="#4B5563" />
-              <Text style={styles.settingText}>Network Settings</Text>
+              <Text style={styles.settingText}>Booking History</Text>
             </View>
-            <FeatherIcon name="chevron-right" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.signOutButton} onPress={handleLogout}>
+            <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Security */}
+        {/* Support */}
         <View style={styles.settingsSection}>
-          <Text style={styles.sectionTitle}>Security</Text>
-          
-          {/* Password */}
+          <Text style={styles.sectionTitle}>Support</Text>
+
+          {/* Help Center */}
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
-              <FeatherIcon name="shield" size={20} color="#4B5563" />
-              <View>
-                <Text style={styles.settingText}>Password</Text>
-                <Text style={styles.settingSubtext}>Last changed 3 months ago</Text>
-              </View>
+              <MaterialIcon name="help-outline" size={20} color="#4B5563" />
+              <Text style={styles.settingText}>Help Center</Text>
             </View>
             <FeatherIcon name="chevron-right" size={20} color="#9CA3AF" />
           </TouchableOpacity>
 
-          {/* Sign Out */}
-          <TouchableOpacity style={styles.signOutButton}>
-            <Text style={styles.signOutText}>Sign Out</Text>
+          {/* Contact Support */}
+          <TouchableOpacity style={styles.settingItem}>
+            <View style={styles.settingItemLeft}>
+              <MaterialIcon name="support-agent" size={20} color="#4B5563" />
+              <Text style={styles.settingText}>Contact Support</Text>
+            </View>
+            <FeatherIcon name="chevron-right" size={20} color="#9CA3AF" />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -99,10 +137,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
+    paddingTop: 30,
   },
   profileContainer: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 4,
     padding: 16,
     margin: 16,
     flexDirection: 'row',
@@ -132,7 +171,7 @@ const styles = StyleSheet.create({
   },
   settingsSection: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 4,
     margin: 16,
     padding: 16,
     shadowColor: '#000',
@@ -164,9 +203,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#4B5563',
   },
-  settingSubtext: {
-    fontSize: 12,
-    color: '#9CA3AF',
+  settingValue: {
+    fontSize: 16,
+    color: '#111827',
   },
   toggle: {
     width: 44,

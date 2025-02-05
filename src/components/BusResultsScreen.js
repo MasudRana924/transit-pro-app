@@ -1,19 +1,23 @@
 import React, { useState } from 'react';
-import { 
-  View, 
-  Text, 
-  SafeAreaView, 
-  TouchableOpacity, 
-  ScrollView, 
-  StyleSheet, 
-  Platform 
+import {
+  View,
+  Text,
+  SafeAreaView,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Platform,
+  Modal,
+  Pressable,
 } from 'react-native';
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import FontAwesomeIcon from 'react-native-vector-icons/FontAwesome5';
 import { useNavigation } from '@react-navigation/native';
+
 const BusResultsScreen = () => {
-      const navigation = useNavigation()
+  const navigation = useNavigation();
   const [sortBy, setSortBy] = useState('departure');
+  const [isFilterModalVisible, setFilterModalVisible] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState({
     ac: false,
     nonAc: false,
@@ -24,31 +28,56 @@ const BusResultsScreen = () => {
   const buses = [
     {
       id: 1,
-      operator: "Hanif Enterprise",
-      type: "AC Sleeper",
-      departure: "06:00 AM",
-      arrival: "02:30 PM",
-      duration: "8h 30m",
+      operator: 'Hanif Enterprise',
+      type: 'AC Sleeper',
+      departure: '06:00 AM',
+      arrival: '02:30 PM',
+      duration: '8h 30m',
       price: 1200,
       rating: 4.5,
       seatsAvailable: 12,
-      amenities: ["wifi", "usb", "coffee", "blanket"],
-      isRecommended: true
+      amenities: ['wifi', 'usb', 'coffee', 'blanket'],
+      isRecommended: true,
     },
     {
       id: 2,
-      operator: "Shyamoli Paribahan",
-      type: "Non-AC Seater",
-      departure: "07:30 AM",
-      arrival: "03:00 PM",
-      duration: "7h 30m",
+      operator: 'Shyamoli Paribahan',
+      type: 'Non-AC Seater',
+      departure: '07:30 AM',
+      arrival: '03:00 PM',
+      duration: '7h 30m',
       price: 800,
       rating: 4.2,
       seatsAvailable: 8,
-      amenities: ["wifi", "usb"],
-      isRecommended: false
+      amenities: ['wifi', 'usb'],
+      isRecommended: false,
     },
   ];
+
+  const toggleFilterModal = () => {
+    setFilterModalVisible(!isFilterModalVisible);
+  };
+
+ const handleFilterChange = (filter) => {
+  setSelectedFilters({
+    ac: false,
+    nonAc: false,
+    sleeper: false,
+    seater: false,
+    [filter]: true, // Set the clicked filter to true, and others to false.
+  });
+};
+  const applyFilters = () => {
+    toggleFilterModal();
+  };
+
+  const filteredBuses = buses.filter((bus) => {
+    if (selectedFilters.ac && !bus.type.includes('AC')) return false;
+    if (selectedFilters.nonAc && bus.type.includes('AC')) return false;
+    if (selectedFilters.sleeper && !bus.type.includes('Sleeper')) return false;
+    if (selectedFilters.seater && !bus.type.includes('Seater')) return false;
+    return true;
+  });
 
   const renderBusItem = (bus) => (
     <View key={bus.id} style={styles.busContainer}>
@@ -57,7 +86,7 @@ const BusResultsScreen = () => {
           <Text style={styles.recommendedText}>Best Offer</Text>
         </View>
       )}
-      
+
       <View style={styles.busHeader}>
         <View>
           <Text style={styles.operatorName}>{bus.operator}</Text>
@@ -87,13 +116,13 @@ const BusResultsScreen = () => {
       <View style={styles.amenitiesContainer}>
         {bus.amenities.includes('wifi') && (
           <View style={styles.amenityItem}>
-            <FeatherIcon name="wifi" size={16} color="#6B7280" />
+            <FeatherIcon name="wifi" size={16} color="#ff2511" />
             <Text style={styles.amenityText}>Wi-Fi</Text>
           </View>
         )}
         {bus.amenities.includes('coffee') && (
           <View style={styles.amenityItem}>
-            <FontAwesomeIcon name="coffee" size={16} color="#6B7280" />
+            <FontAwesomeIcon name="coffee" size={16} color="#ff2511" />
             <Text style={styles.amenityText}>Drinks</Text>
           </View>
         )}
@@ -103,15 +132,15 @@ const BusResultsScreen = () => {
         <View style={styles.ratingContainer}>
           <FeatherIcon name="star" size={16} color="#FBBF24" />
           <Text style={styles.ratingText}>{bus.rating}</Text>
-          <Text style={styles.seatsText}>• {bus.seatsAvailable} seats left</Text>
+          <Text style={styles.seatsText}>
+            • {bus.seatsAvailable} seats left
+          </Text>
         </View>
-        <TouchableOpacity 
-  style={styles.selectSeatsButton} 
-  onPress={() => navigation.navigate('Seats')}
->
-  <Text style={styles.selectSeatsButtonText}>Select Seats</Text>
-</TouchableOpacity>
-
+        <TouchableOpacity
+          style={styles.selectSeatsButton}
+          onPress={() => navigation.navigate('Seats')}>
+          <Text style={styles.selectSeatsButtonText}>Select Seats</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -119,8 +148,8 @@ const BusResultsScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-      <TouchableOpacity onPress={() => navigation.navigate('Main')}>
-          <FeatherIcon name="arrow-left" size={24} color="#4B5563" />
+        <TouchableOpacity onPress={() => navigation.navigate('Main')}>
+          <FeatherIcon name="arrow-left" size={24} color="#ff2511" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Search Results</Text>
         <View style={{ width: 24 }} /> {/* Placeholder to center the title */}
@@ -138,34 +167,36 @@ const BusResultsScreen = () => {
               <Text style={styles.dateText}>2 Passengers</Text>
             </View>
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Main')}>
             <Text style={styles.modifyText}>Modify</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.filterSortContainer}>
-          <TouchableOpacity style={styles.filterButton}>
-            <FeatherIcon name="filter" size={20} color="#4B5563" />
+          <TouchableOpacity
+            style={styles.filterButton}
+            onPress={toggleFilterModal}>
+            <FeatherIcon name="filter" size={20} color="#ff2511" />
             <Text style={styles.filterButtonText}>Filter</Text>
           </TouchableOpacity>
-          
+
           <View style={styles.sortContainer}>
             <Text style={styles.sortLabel}>Sort by:</Text>
             <View style={styles.sortDropdown}>
               <Text style={styles.sortValue}>
                 {sortBy === 'departure' ? 'Departure Time' : sortBy}
               </Text>
-              <FeatherIcon name="chevron-down" size={16} color="#4B5563" />
+              <FeatherIcon name="chevron-down" size={16} color="#ff2511" />
             </View>
           </View>
         </View>
 
-        {buses.map(renderBusItem)}
+        {filteredBuses.map(renderBusItem)}
 
-        {buses.length === 0 && (
+        {filteredBuses.length === 0 && (
           <View style={styles.noResultsContainer}>
             <View style={styles.noResultsIconContainer}>
-              <FeatherIcon name="truck" size={32} color="#9CA3AF" />
+              <FeatherIcon name="truck" size={32} color="#ff2511" />
             </View>
             <Text style={styles.noResultsTitle}>No buses found</Text>
             <Text style={styles.noResultsSubtitle}>
@@ -174,6 +205,63 @@ const BusResultsScreen = () => {
           </View>
         )}
       </ScrollView>
+
+      {/* Filter Modal */}
+      <Modal
+        transparent={true}
+        visible={isFilterModalVisible}
+        onRequestClose={toggleFilterModal}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Filter by Bus Type</Text>
+            <View style={styles.filterOptions}>
+              <Pressable
+  style={[ 
+    styles.filterOption,
+    selectedFilters.ac && styles.filterOptionSelected,
+  ]}
+  onPress={() => handleFilterChange('ac')}>
+  <Text style={styles.filterOptionText}>AC</Text>
+</Pressable>
+<Pressable
+  style={[ 
+    styles.filterOption,
+    selectedFilters.nonAc && styles.filterOptionSelected,
+  ]}
+  onPress={() => handleFilterChange('nonAc')}>
+  <Text style={styles.filterOptionText}>Non-AC</Text>
+</Pressable>
+<Pressable
+  style={[ 
+    styles.filterOption,
+    selectedFilters.sleeper && styles.filterOptionSelected,
+  ]}
+  onPress={() => handleFilterChange('sleeper')}>
+  <Text style={styles.filterOptionText}>Sleeper</Text>
+</Pressable>
+<Pressable
+  style={[ 
+    styles.filterOption,
+    selectedFilters.seater && styles.filterOptionSelected,
+  ]}
+  onPress={() => handleFilterChange('seater')}>
+  <Text style={styles.filterOptionText}>Seater</Text>
+</Pressable>
+
+            </View>
+            <View style={styles.modalButtons}>
+              <Pressable style={styles.modalButton} onPress={toggleFilterModal}>
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.modalButtonPrimary]}
+                onPress={applyFilters}>
+                <Text style={styles.modalButtonText}>Apply</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -182,7 +270,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
-    paddingTop:25
+    paddingTop: 25,
   },
   header: {
     flexDirection: 'row',
@@ -200,7 +288,7 @@ const styles = StyleSheet.create({
   },
   journeySummary: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 4,
     padding: 16,
     margin: 16,
     flexDirection: 'row',
@@ -244,7 +332,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingVertical: 8,
     paddingHorizontal: 16,
-    borderRadius: 10,
+    borderRadius: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -271,7 +359,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: 4,
   },
   sortValue: {
     marginRight: 4,
@@ -280,7 +368,7 @@ const styles = StyleSheet.create({
   },
   busContainer: {
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 4,
     padding: 16,
     marginHorizontal: 16,
     marginBottom: 16,
@@ -291,7 +379,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   recommendedBadge: {
-    backgroundColor: '#D1FAE5',
+    backgroundColor: '#ff2511',
     alignSelf: 'flex-start',
     paddingHorizontal: 12,
     paddingVertical: 4,
@@ -299,7 +387,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   recommendedText: {
-    color: '#047857',
+    color: 'white',
     fontSize: 12,
     fontWeight: '500',
   },
@@ -323,7 +411,7 @@ const styles = StyleSheet.create({
   priceText: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#059669',
+    color: '#ff2511',
   },
   priceSubtext: {
     fontSize: 12,
@@ -393,10 +481,10 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   selectSeatsButton: {
-    backgroundColor: '#059669',
+    backgroundColor: '#ff2511',
     paddingVertical: 10,
     paddingHorizontal: 20,
-    borderRadius: 10,
+    borderRadius: 4,
   },
   selectSeatsButtonText: {
     color: 'white',
@@ -425,6 +513,63 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     textAlign: 'center',
     lineHeight: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 4,
+    padding: 16,
+    width: '80%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1F2937',
+    marginBottom: 16,
+  },
+  filterOptions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  filterOption: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  filterOptionSelected: {
+    backgroundColor: '#ff2511',
+    borderColor: '#ff2511',
+    color:'white'
+  },
+  filterOptionText: {
+    fontSize: 14,
+    color: '#1F2937',
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    marginTop: 16,
+    gap: 8,
+  },
+  modalButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 4,
+  },
+  modalButtonPrimary: {
+    backgroundColor: '#ff2511',
+  },
+  modalButtonText: {
+    fontSize: 14,
+    color: 'white',
   },
 });
 

@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "TransitPro",
-    "slug": "transitpro",
+    "slug": "transitpro-rzyn23-txk7pit9-wf6ea",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -27,7 +27,7 @@
     },
     "extra": {
       "eas": {
-        "projectId": "3329d357-2385-468e-b150-cf10fea5dee8"
+        "projectId": "b7c6acf3-1103-4e9e-b12b-50a64effebfe"
       }
     }
   }
