@@ -13,11 +13,13 @@ import {
   Animated,
   Easing,
   Modal,
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+// import DateTimePicker from '@react-native-community/datetimepicker';
+import FeaturesSection from './FeaturesSection';
 
 const CustomLoader = ({ visible }) => {
   const rotateValue = new Animated.Value(0);
@@ -144,6 +146,7 @@ const HomeScreen = () => {
     'Sherpur',
   ];
 
+
   const handleLogin = () => {
     if (!fromDivision || !toDivision || !date) {
       alert('Please fill in all fields');
@@ -218,115 +221,130 @@ const HomeScreen = () => {
           style={styles.container}
           contentContainerStyle={styles.scrollContainer}
           keyboardShouldPersistTaps="handled">
+          {/* Company Header */}
           <View style={styles.companyHeader}>
-            <View style={styles.logoContainer}>
-              <MaterialIcons name="directions-bus" size={32} color="#ff2511" />
-            </View>
-            <Text style={styles.companyName}>TransitPro</Text>
+            <Image
+              source={{
+                uri: 'https://imgs.search.brave.com/YXMltTc4uarzRRmZ476Pvc3CW2yh0guPNeGMtxm_ymw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly90NC5m/dGNkbi5uZXQvanBn/LzAyLzg4LzgyLzE1/LzM2MF9GXzI4ODgy/MTU3NV9UTTRnSk9N/cE9GZ05IMVFVSURH/emFEUXpNWlNVOTJM/Uy5qcGc',
+              }}
+              style={styles.headerImage}
+              resizeMode="cover"
+            />
           </View>
-          <View style={styles.searchCard}>
-            <Text style={styles.title}>Find Your Perfect Bus Journey</Text>
 
-            <View style={styles.inputContainer}>
-              {/* From Location */}
-              <Text style={styles.label}>From</Text>
-              <View style={styles.inputWrapper}>
-                <Icon
-                  name="map-pin"
-                  size={20}
-                  color="#ff2511"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  value={fromDivision}
-                  onChangeText={handleFromInputChange}
-                  placeholder="Enter departure district"
-                  style={styles.input}
-                  onFocus={() => setShowFromSuggestions(true)}
-                  onBlur={() =>
-                    setTimeout(() => setShowFromSuggestions(false), 200)
-                  }
-                />
-              </View>
-              {showFromSuggestions && (
-                <FlatList
-                  data={fromSuggestions}
-                  renderItem={({ item }) =>
-                    renderSuggestionItem({ item, field: 'from' })
-                  }
-                  keyExtractor={(item) => item}
-                  style={styles.suggestionsList}
-                />
-              )}
-
-              {/* To Location */}
-              <Text style={styles.label}>To</Text>
-              <View style={styles.inputWrapper}>
-                <Icon
-                  name="map-pin"
-                  size={20}
-                  color="#ff2511"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  value={toDivision}
-                  onChangeText={handleToInputChange}
-                  placeholder="Enter destination district"
-                  style={styles.input}
-                  onFocus={() => setShowToSuggestions(true)}
-                  onBlur={() =>
-                    setTimeout(() => setShowToSuggestions(false), 200)
-                  }
-                />
-              </View>
-              {showToSuggestions && (
-                <FlatList
-                  data={toSuggestions}
-                  renderItem={({ item }) =>
-                    renderSuggestionItem({ item, field: 'to' })
-                  }
-                  keyExtractor={(item) => item}
-                  style={styles.suggestionsList}
-                />
-              )}
-
-              {/* Date Selection */}
-              <Text style={styles.label}>Date of Journey</Text>
-              <View style={styles.inputWrapper}>
-                <Icon
-                  name="calendar"
-                  size={20}
-                  color="#ff2511"
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  value={date}
-                  onFocus={() => setShowCalendar(true)}
-                  placeholder="Select date"
-                  style={styles.input}
-                />
+          {/* Search Card */}
+          <View style={styles.searchCardContainer}>
+            <View style={styles.searchCard}>
+              <View style={styles.logoHeader}>
+                <View style={styles.logoContainer}>
+                  <MaterialIcons name="directions-bus" size={32} color="#ff2511" />
+                </View>
+                <Text style={styles.companyName}>TransitPro</Text>
               </View>
 
-              {showCalendar && (
-                <DateTimePicker
-                  value={new Date()}
-                  mode="date"
-                  display="default"
-                  onChange={handleDateChange}
-                  accentColor="#ff2511"
-                  textColor="#ff2511"
-                />
-              )}
 
-              {/* Search Button */}
-              <TouchableOpacity
-                style={styles.searchButton}
-                onPress={handleLogin}>
-                <Icon name="search" size={20} color="white" />
-                <Text style={styles.searchButtonText}>Search Buses</Text>
-              </TouchableOpacity>
+              <View style={styles.inputContainer}>
+                {/* From Location */}
+                <Text style={styles.label}>From</Text>
+                <View style={styles.inputWrapper}>
+                  <Icon
+                    name="map-pin"
+                    size={20}
+                    color="#ff2511"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    value={fromDivision}
+                    onChangeText={handleFromInputChange}
+                    placeholder="Enter departure district"
+                    style={styles.input}
+                    onFocus={() => setShowFromSuggestions(true)}
+                    onBlur={() =>
+                      setTimeout(() => setShowFromSuggestions(false), 200)
+                    }
+                  />
+                </View>
+                {showFromSuggestions && (
+                  <FlatList
+                    data={fromSuggestions}
+                    renderItem={({ item }) =>
+                      renderSuggestionItem({ item, field: 'from' })
+                    }
+                    keyExtractor={(item) => item}
+                    style={styles.suggestionsList}
+                  />
+                )}
+
+                {/* To Location */}
+                <Text style={styles.label}>To</Text>
+                <View style={styles.inputWrapper}>
+                  <Icon
+                    name="map-pin"
+                    size={20}
+                    color="#ff2511"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    value={toDivision}
+                    onChangeText={handleToInputChange}
+                    placeholder="Enter destination district"
+                    style={styles.input}
+                    onFocus={() => setShowToSuggestions(true)}
+                    onBlur={() =>
+                      setTimeout(() => setShowToSuggestions(false), 200)
+                    }
+                  />
+                </View>
+                {showToSuggestions && (
+                  <FlatList
+                    data={toSuggestions}
+                    renderItem={({ item }) =>
+                      renderSuggestionItem({ item, field: 'to' })
+                    }
+                    keyExtractor={(item) => item}
+                    style={styles.suggestionsList}
+                  />
+                )}
+
+                {/* Date Selection */}
+                <Text style={styles.label}>Date of Journey</Text>
+                <View style={styles.inputWrapper}>
+                  <Icon
+                    name="calendar"
+                    size={20}
+                    color="#ff2511"
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    value={date}
+                    onFocus={() => setShowCalendar(true)}
+                    placeholder="Select date"
+                    style={styles.input}
+                  />
+                </View>
+
+                {/* {showCalendar && (
+                  <DateTimePicker
+                    value={new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={handleDateChange}
+                    accentColor="#ff2511"
+                    textColor="#ff2511"
+                  />
+                )} */}
+
+                {/* Search Button */}
+                <TouchableOpacity
+                  style={styles.searchButton}
+                  onPress={handleLogin}>
+                  <Icon name="search" size={20} color="white" />
+                  <Text style={styles.searchButtonText}>Search Buses</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
+          <FeaturesSection/>
         </ScrollView>
       </KeyboardAvoidingView>
 
@@ -340,12 +358,38 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: 'white',
-    paddingTop: 35,
+    // paddingTop: 35,
   },
   container: {
     flex: 1,
   },
   companyHeader: {
+    width: '100%',
+    height: 350,
+  },
+  headerImage: {
+    width: '100%',
+    height: 350,
+  },
+  searchCardContainer: {
+    position: 'absolute',
+    top: 150, // Adjust this value to control how much of the card overlaps
+    width: '100%',
+    paddingHorizontal: 16,
+    zIndex: 1, // Ensure the card is above the header
+  },
+  searchCard: {
+    backgroundColor: 'white',
+    width: '100%',
+    padding: 16,
+    shadowColor: 'black',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 5,
+    borderRadius: 4,
+  },
+  logoHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -367,23 +411,6 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#ff2511',
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    backgroundColor: 'white',
-  },
-  searchCard: {
-    backgroundColor: 'white',
-    width: '95%',
-    padding: 16,
-    alignSelf: 'center',
-    shadowColor: 'black',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 6,
-    elevation: 5,
-    borderRadius: 4,
   },
   title: {
     fontSize: 20,
@@ -446,7 +473,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     fontWeight: '500',
   },
-  // Loader styles
   loaderContainer: {
     flex: 1,
     justifyContent: 'center',

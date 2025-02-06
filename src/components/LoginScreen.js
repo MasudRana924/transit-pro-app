@@ -16,14 +16,16 @@ import { MaterialIcons } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { loginUser } from '../services/api';
-
+import { useDispatch, useSelector } from 'react-redux';
+import { login } from '../redux/auth/authSlice';
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false); 
+  const dispatch = useDispatch();
+  const { isLoading, error } = useSelector(state => state.auth);
   const handleLogin = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
@@ -32,14 +34,11 @@ const LoginScreen = () => {
   
     setLoading(true);
     try {
-      const data = await loginUser(email, password);
-      if (data?.token) {
-        await AsyncStorage.setItem('@auth_token', data.token);
-        setLoading(false);
-        navigation.replace('Main'); // Use replace to avoid back navigation
-      } else {
-        throw new Error('Invalid credentials');
-      }
+      const params = {
+        email: email,
+        password: password,
+      };
+      dispatch(login(params));
     } catch (error) {
       setLoading(false);
       Alert.alert('Login Failed', error.message || 'Something went wrong');
@@ -148,7 +147,7 @@ const LoginScreen = () => {
           {/* Sign Up Link */}
           <View style={styles.signUpContainer}>
             <Text style={styles.signUpText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('SignUp')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
               <Text style={styles.signUpLink}>Sign Up</Text>
             </TouchableOpacity>
           </View>
@@ -191,10 +190,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#E0E0E0',
-    borderRadius: 8,
+    borderRadius: 4,
     paddingHorizontal: 16,
     marginBottom: 16,
-    backgroundColor: '#F8F8F8',
+    backgroundColor: 'white',
     height: 56,
   },
   inputIcon: {
@@ -218,7 +217,7 @@ const styles = StyleSheet.create({
   },
   loginButton: {
     backgroundColor: '#ff2511',
-    borderRadius: 8,
+    borderRadius: 4,
     height: 56,
     justifyContent: 'center',
     alignItems: 'center',

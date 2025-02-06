@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  SafeAreaView
 } from 'react-native';
 import { Text, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
@@ -65,7 +66,7 @@ const BookingHistoryScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="#333" />
@@ -115,7 +116,7 @@ const BookingHistoryScreen = () => {
           </Animated.View>
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 };
 

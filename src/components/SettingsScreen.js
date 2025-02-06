@@ -10,8 +10,12 @@ import {
 import FeatherIcon from 'react-native-vector-icons/Feather';
 import MaterialIcon from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logout } from '../redux/auth/authSlice';
+import { useDispatch } from 'react-redux';
 const SettingsScreen = () => {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState(true);
@@ -53,9 +57,34 @@ const SettingsScreen = () => {
         {/* Preferences */}
         <View style={styles.settingsSection}>
           <Text style={styles.sectionTitle}>Preferences</Text>
+          <TouchableOpacity
+            style={styles.settingItem}
+            onPress={() => navigation.navigate('History')}>
+            <View style={styles.settingItemLeft}>
+                <MaterialCommunityIcons name="ticket-confirmation-outline" size={24} color="#333" />
+              <Text style={styles.settingText}>Booking History</Text>
+            </View>
+          </TouchableOpacity>
+          {/* Payment Method */}
+          <TouchableOpacity style={styles.settingItem}  onPress={() => navigation.navigate('VerifyOTP')}>
+            <View style={styles.settingItemLeft}>
+              <FeatherIcon name="credit-card" size={20} color="#4B5563" />
+              <Text style={styles.settingText}>Payment Method</Text>
+            </View>
+            <Text style={styles.settingValue}>{paymentMethod}</Text>
+          </TouchableOpacity>
 
-          {/* Dark Mode */}
-          <View style={styles.settingItem}>
+          
+
+          <TouchableOpacity style={styles.signOutButton} onPress={() => dispatch(logout())}>
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+        {/* Support */}
+        <View style={styles.settingsSection}>
+          <Text style={styles.sectionTitle}>Support</Text>
+{/* Dark Mode */}
+<View style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
               <FeatherIcon name="moon" size={20} color="#4B5563" />
               <Text style={styles.settingText}>Dark Mode</Text>
@@ -82,34 +111,6 @@ const SettingsScreen = () => {
             </View>
             <Text style={styles.settingValue}>{language}</Text>
           </View>
-
-          {/* Payment Method */}
-          <View style={styles.settingItem}>
-            <View style={styles.settingItemLeft}>
-              <FeatherIcon name="credit-card" size={20} color="#4B5563" />
-              <Text style={styles.settingText}>Payment Method</Text>
-            </View>
-            <Text style={styles.settingValue}>{paymentMethod}</Text>
-          </View>
-
-          {/* Network Settings */}
-          <TouchableOpacity
-            style={styles.settingItem}
-            onPress={() => navigation.navigate('History')}>
-            <View style={styles.settingItemLeft}>
-              <FeatherIcon name="wifi" size={20} color="#4B5563" />
-              <Text style={styles.settingText}>Booking History</Text>
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.signOutButton} onPress={handleLogout}>
-            <Text style={styles.signOutText}>Sign Out</Text>
-          </TouchableOpacity>
-        </View>
-        {/* Support */}
-        <View style={styles.settingsSection}>
-          <Text style={styles.sectionTitle}>Support</Text>
-
           {/* Help Center */}
           <TouchableOpacity style={styles.settingItem}>
             <View style={styles.settingItemLeft}>
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F9FAFB',
-    paddingTop: 30,
+    // paddingTop: 30,
   },
   profileContainer: {
     backgroundColor: 'white',
