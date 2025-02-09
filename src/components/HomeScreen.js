@@ -18,7 +18,7 @@ import {
 import Icon from 'react-native-vector-icons/Feather';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
-// import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import FeaturesSection from './FeaturesSection';
 
 const CustomLoader = ({ visible }) => {
@@ -148,10 +148,10 @@ const HomeScreen = () => {
 
 
   const handleLogin = () => {
-    if (!fromDivision || !toDivision || !date) {
-      alert('Please fill in all fields');
-      return;
-    }
+    // if (!fromDivision || !toDivision || !date) {
+    //   alert('Please fill in all fields');
+    //   return;
+    // }
 
     setLoading(true);
 

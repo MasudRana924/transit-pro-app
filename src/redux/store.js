@@ -6,6 +6,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import logger from 'redux-logger';
 import AuthSlice from './auth/authSlice';
+import CreateAccountSlice from './auth/registerSlice';
 const persistConfig = {
     key: 'root',
     storage: AsyncStorage,
@@ -13,6 +14,7 @@ const persistConfig = {
   
   const rootReducer = combineReducers({
     auth: persistReducer(persistConfig, AuthSlice),
+    register: CreateAccountSlice,
   });
   
   const store = configureStore({

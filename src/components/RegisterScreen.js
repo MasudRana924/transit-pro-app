@@ -11,72 +11,48 @@ import {
   Keyboard,
   Alert,
   ActivityIndicator,
-  Animated,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
+import { useDispatch } from 'react-redux';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
+  const dispatch = useDispatch();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [emailFocused, setEmailFocused] = useState(false);
-  const [passwordFocused, setPasswordFocused] = useState(false);
-
-  const emailAnimation = new Animated.Value(0);
-  const passwordAnimation = new Animated.Value(0);
-
-  const animateInput = (animation, toValue) => {
-    Animated.spring(animation, {
-      toValue,
-      useNativeDriver: false,
-      bounciness: 8,
-    }).start();
-  };
-
-  const handleFocus = (field, animation) => {
-    if (field === 'email') setEmailFocused(true);
-    if (field === 'password') setPasswordFocused(true);
-    animateInput(animation, 1);
-  };
-
-  const handleBlur = (field, animation) => {
-    if (field === 'email') setEmailFocused(false);
-    if (field === 'password') setPasswordFocused(false);
-    animateInput(animation, 0);
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleRegister = async () => {
     if (!email || !password) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
-
-    if (!email.includes('@')) {
-      Alert.alert('Error', 'Please enter a valid email address');
-      return;
-    }
-
-    if (password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters');
-      return;
-    }
-
-    setLoading(true);
     try {
-      // Registration logic here
+      setIsLoading(true);
+      const response = await fetch('https://transitpro-service.onrender.com/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        await AsyncStorage.setItem('userEmail', email);
+        navigation.navigate('VerifyOTP');
+      } else {
+        Alert.alert('Registration Failed', data.message || 'Something went wrong');
+      }
     } catch (error) {
       Alert.alert('Registration Failed', error.message || 'Something went wrong');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
-
-  const inputBorderColor = (focused) => 
-    focused ? '#ff2511' : '#E0E0E0';
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -84,132 +60,77 @@ const RegisterScreen = () => {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.container}
       >
+        {/* Header Section */}
         <View style={styles.header}>
-          <Animated.View style={styles.logoContainer}>
-            <MaterialIcons name="directions-bus" size={60} color="#ff2511" />
-          </Animated.View>
+          <MaterialIcons name="directions-bus" size={50} color="#ff2511" />
           <Text style={styles.headerTitle}>TransitPro</Text>
-          <Text style={styles.headerSubtitle}>Create an Account</Text>
+          <Text style={styles.headerSubtitle}>Create your account</Text>
         </View>
 
+        {/* Form Section */}
         <View style={styles.formContainer}>
-          <Animated.View
-            style={[
-              styles.inputContainer,
-              {
-                borderColor: inputBorderColor(emailFocused),
-                transform: [{
-                  scale: emailAnimation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1, 1.02],
-                  }),
-                }],
-              },
-            ]}
-          >
-            <MaterialIcons
-              name="email"
-              size={22}
-              color={emailFocused ? '#ff2511' : '#666'}
-              style={styles.inputIcon}
-            />
+          {/* Email Input */}
+          <View style={styles.inputContainer}>
+            <MaterialIcons name="email" size={20} color="#666" style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, emailFocused && styles.focusedInput]}
+              style={styles.input}
               placeholder="Email"
               value={email}
               onChangeText={setEmail}
               keyboardType="email-address"
               autoCapitalize="none"
-              onFocus={() => handleFocus('email', emailAnimation)}
-              onBlur={() => handleBlur('email', emailAnimation)}
             />
-          </Animated.View>
+          </View>
 
-          <Animated.View
-            style={[
-              styles.inputContainer,
-              {
-                borderColor: inputBorderColor(passwordFocused),
-                transform: [{
-                  scale: passwordAnimation.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: [1, 1.02],
-                  }),
-                }],
-              },
-            ]}
-          >
-            <MaterialIcons
-              name="lock"
-              size={22}
-              color={passwordFocused ? '#ff2511' : '#666'}
-              style={styles.inputIcon}
-            />
+          {/* Password Input */}
+          <View style={styles.inputContainer}>
+            <MaterialIcons name="lock" size={20} color="#666" style={styles.inputIcon} />
             <TextInput
-              style={[styles.input, passwordFocused && styles.focusedInput]}
+              style={styles.input}
               placeholder="Password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry={!showPassword}
-              onFocus={() => handleFocus('password', passwordAnimation)}
-              onBlur={() => handleBlur('password', passwordAnimation)}
             />
-            <TouchableOpacity
-              onPress={() => setShowPassword(!showPassword)}
-              style={styles.passwordToggle}
-            >
-              <MaterialIcons
-                name={showPassword ? 'visibility' : 'visibility-off'}
-                size={22}
-                color={passwordFocused ? '#ff2511' : '#666'}
-              />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.passwordToggle}>
+              <MaterialIcons name={showPassword ? 'visibility' : 'visibility-off'} size={20} color="#666" />
             </TouchableOpacity>
-          </Animated.View>
+          </View>
 
-          <TouchableOpacity
-            style={[styles.registerButton, loading && styles.registerButtonLoading]}
-            onPress={handleRegister}
-            disabled={loading}
-            activeOpacity={0.8}
-          >
-            {loading ? (
+          {/* Register Button */}
+          <TouchableOpacity style={styles.registerButton} onPress={handleRegister} disabled={isLoading}>
+            {isLoading ? (
               <View style={styles.loaderContainer}>
-                <Text style={styles.loaderText}>Creating account</Text>
+                <Text style={styles.loaderText}>Please wait</Text>
                 <ActivityIndicator size="small" color="white" />
               </View>
             ) : (
-              <Text style={styles.registerButtonText}>Create Account</Text>
+              <Text style={styles.registerButtonText}>Create</Text>
             )}
           </TouchableOpacity>
-
+          
+          {/* Divider */}
           <View style={styles.dividerContainer}>
             <View style={styles.divider} />
-            <Text style={styles.dividerText}>or register with</Text>
+            <Text style={styles.dividerText}>or continue with</Text>
             <View style={styles.divider} />
           </View>
 
+          {/* Social Login Buttons */}
           <View style={styles.socialButtonsContainer}>
-            <TouchableOpacity
-              style={styles.socialButton}
-              activeOpacity={0.8}
-            >
-              <MaterialIcons name="facebook" size={26} color="#1877F2" />
+            <TouchableOpacity style={styles.socialButton}>
+              <MaterialIcons name="facebook" size={24} color="#1877F2" />
             </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.socialButton}
-              activeOpacity={0.8}
-            >
-              <MaterialCommunityIcons name="google" size={26} color="#DB4437" />
+            <TouchableOpacity style={styles.socialButton}>
+              <MaterialCommunityIcons name="google" size={24} color="green" />
             </TouchableOpacity>
           </View>
 
-          <View style={styles.signInContainer}>
-            <Text style={styles.signInText}>Already have an account? </Text>
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Login')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.signInLink}>Sign In</Text>
+          {/* Sign Up Link */}
+          <View style={styles.signUpContainer}>
+            <Text style={styles.signUpText}>Don't have an account? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.signUpLink}>Signin</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -221,55 +142,41 @@ const RegisterScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: 'white',
     alignItems: 'center',
     justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
-    marginTop: Platform.OS === 'ios' ? 60 : 40,
+    marginTop: 60,
     marginBottom: 40,
   },
-  logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: 'rgba(255, 37, 17, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: '#333333',
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#333',
     marginTop: 10,
-    letterSpacing: 0.5,
   },
   headerSubtitle: {
-    fontSize: 18,
-    color: '#666666',
+    fontSize: 16,
+    color: '#666',
     marginTop: 8,
-    letterSpacing: 0.3,
   },
   formContainer: {
-    width: '88%',
+    width: '100%',
     maxWidth: 400,
+    paddingHorizontal: 24,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1.5,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
     borderRadius: 4,
     paddingHorizontal: 16,
     marginBottom: 16,
-    backgroundColor: '#FFFFFF',
-    height: 55,
-    // shadowColor: '#000000',
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.1,
-    // shadowRadius: 4,
-    // elevation: 3,
+    backgroundColor: 'white',
+    height: 56,
   },
   inputIcon: {
     marginRight: 12,
@@ -277,11 +184,7 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 16,
-    color: '#333333',
-    letterSpacing: 0.3,
-  },
-  focusedInput: {
-    color: '#ff2511',
+    color: '#333',
   },
   passwordToggle: {
     padding: 8,
@@ -289,32 +192,27 @@ const styles = StyleSheet.create({
   registerButton: {
     backgroundColor: '#ff2511',
     borderRadius: 4,
-    height: 55,
+    height: 56,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 8,
     marginBottom: 24,
-    // shadowColor: '#ff2511',
-    // shadowOffset: { width: 0, height: 4 },
-    // shadowOpacity: 0.3,
-    // shadowRadius: 8,
-    // elevation: 5,
-  },
-  registerButtonLoading: {
-    backgroundColor: '#ff251199',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   registerButtonText: {
-    color: '#FFFFFF',
-    fontSize: 18,
+    color: 'white',
+    fontSize: 16,
     fontWeight: '600',
-    letterSpacing: 0.5,
   },
   loaderContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
   loaderText: {
-    color: '#FFFFFF',
+    color: 'white',
     fontSize: 16,
     fontWeight: '600',
     marginRight: 8,
@@ -326,14 +224,13 @@ const styles = StyleSheet.create({
   },
   divider: {
     flex: 1,
-    height: 1.5,
+    height: 1,
     backgroundColor: '#E0E0E0',
   },
   dividerText: {
-    color: '#666666',
+    color: '#666',
     paddingHorizontal: 16,
     fontSize: 14,
-    fontWeight: '500',
   },
   socialButtonsContainer: {
     flexDirection: 'row',
@@ -341,33 +238,28 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   socialButton: {
-    width: 60,
-    height: 60,
-    borderRadius: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 12,
     backgroundColor: '#F8F8F8',
     justifyContent: 'center',
     alignItems: 'center',
-    marginHorizontal: 12,
-    borderWidth: 1.5,
+    marginHorizontal: 8,
+    borderWidth: 1,
     borderColor: '#E0E0E0',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  signInContainer: {
+  signUpContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginBottom: 24,
   },
-  signInText: {
-    color: '#666666',
-    fontSize: 15,
+  signUpText: {
+    color: '#666',
+    fontSize: 14,
   },
-  signInLink: {
-    color: '#ff2511',
-    fontSize: 15,
+  signUpLink: {
+    color: '#2196F3',
+    fontSize: 14,
     fontWeight: '600',
   },
 });

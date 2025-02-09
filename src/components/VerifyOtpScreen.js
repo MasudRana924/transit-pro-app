@@ -1,13 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, TextInput, View, Pressable, Text } from 'react-native';
+import { StyleSheet, TextInput, View, Pressable, Text, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const VerifyOtpScreen = () => {
     const navigation = useNavigation();
-    const handleGoBack = () => {
-        navigation.goBack();
-    };
+    const [email, setEmail] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const [otpString, setOtp] = useState(["", "", "", "", "", ""]);
     const [timer, setTimer] = useState(60);
     const inputRefs = useRef([]);
@@ -18,18 +18,19 @@ const VerifyOtpScreen = () => {
             interval = setInterval(() => {
                 setTimer((prevTimer) => prevTimer - 1);
             }, 1000);
-        } else {
-            // setCanResend(true);
         }
         return () => clearInterval(interval);
     }, [timer]);
 
-    const handleResend = () => {
-        const newEndTime = new Date(new Date().getTime() + 60 * 1000);
-        localStorage.setItem("otpEndTime", newEndTime);
-        setTimer(60);
-        //  setCanResend(false);
-    };
+    useEffect(() => {
+        const getEmail = async () => {
+            const storedEmail = await AsyncStorage.getItem('userEmail');
+            if (storedEmail) {
+                setEmail(storedEmail);
+            }
+        };
+        getEmail();
+    }, []);
 
     const handleChange = (index, value) => {
         if (/^[0-9a-zA-Z]$/.test(value) || value === "") {
@@ -42,11 +43,29 @@ const VerifyOtpScreen = () => {
         }
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSubmit = async () => {
         const otp = otpString.join("");
-        if (otp) {
-            // dispatch(verifyOTP({ email, otp }));
+        if (!email || !otp) {
+            Alert.alert('Error', 'Please fill in all fields');
+            return;
+        }
+        try {
+            setIsLoading(true);
+            const response = await fetch('https://transitpro-service.onrender.com/api/auth/verifyOtp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, otp }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                navigation.navigate('Login');
+            } else {
+                Alert.alert('Verification Failed', data.message || 'Something went wrong');
+            }
+        } catch (error) {
+            Alert.alert('Verification Failed', error.message || 'Something went wrong');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -54,9 +73,12 @@ const VerifyOtpScreen = () => {
 
     return (
         <View style={styles.container}>
-            <Icon name="arrow-back" style={styles.arrowIcon} onPress={handleGoBack} />
+            <Icon name="arrow-back" style={styles.arrowIcon} onPress={() => navigation.goBack()} />
             <Text style={styles.title}>Verify</Text>
-            <Text style={styles.subTitle}>We have sent verification code in your Email</Text>
+            <Text style={styles.subTitle}>
+    We have sent a verification code to <Text style={styles.emailText}>{email}</Text>
+</Text>
+
             <View style={styles.inputContainer}>
                 {otpString.map((digit, index) => (
                     <TextInput
@@ -66,10 +88,7 @@ const VerifyOtpScreen = () => {
                         onChangeText={(value) => handleChange(index, value)}
                         placeholderTextColor="blue"
                         keyboardType="numeric"
-                        style={[
-                            styles.input,
-                            digit ? styles.inputFilled : styles.inputEmpty,
-                        ]}
+                        style={[styles.input, digit ? styles.inputFilled : styles.inputEmpty]}
                         ref={(ref) => inputRefs.current[index] = ref}
                     />
                 ))}
@@ -78,8 +97,16 @@ const VerifyOtpScreen = () => {
             <Pressable
                 style={[styles.button, isOtpComplete ? styles.buttonActive : styles.buttonInactive]}
                 onPress={handleSubmit}
+                disabled={isLoading} // Disable button when loading
             >
-                <Text style={styles.buttonText}>Verify</Text>
+                {isLoading ? (
+                    <>
+                        <Text style={styles.buttonText}>Please wait...</Text>
+                        <ActivityIndicator color="white" />
+                    </>
+                ) : (
+                    <Text style={styles.buttonText}>Verify</Text>
+                )}
             </Pressable>
         </View>
     );
@@ -102,10 +129,15 @@ const styles = StyleSheet.create({
     subTitle: {
         fontSize: 10,
         color: '#000000',
-        fontWeight: 'semibold',
+        fontWeight: '600',
         textAlign: 'start',
         marginBottom: 5,
     },
+    emailText: {
+        color: '#ff2511', // Set the email text color to red
+        fontWeight: 'bold',
+    },
+    
     arrowIcon: {
         color: '#ff2511',
         fontSize: 24,
@@ -122,7 +154,7 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderRadius: 4,
         textAlign: 'center',
-        color: 'gray',
+        color: 'black',
         backgroundColor: 'white',
     },
     inputEmpty: {
@@ -130,7 +162,7 @@ const styles = StyleSheet.create({
     },
     inputFilled: {
         borderColor: '#ff2511',
-        color: '#3a86ff',
+        color: 'black',
         fontWeight: 'bold',
     },
     button: {
